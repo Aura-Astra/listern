@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Music Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+        }
+
+        .player-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .song-info {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .song-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .artist {
+            color: #b8c1ec;
+            font-size: 1rem;
+        }
+
+        .visualizer {
+            height: 100px;
+            margin: 2rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .bar {
+            width: 4px;
+            background: #fff;
+            border-radius: 2px;
+            animation: bounce 1.2s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { height: 10px; }
+            50% { height: 50px; }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .btn {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .play-btn {
+            background: #fff;
+            color: #1a1a2e;
+            width: 60px;
+            height: 60px;
+        }
+
+        .play-btn:hover {
+            background: #b8c1ec;
+            transform: scale(1.1);
+        }
+
+        .progress-container {
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            height: 4px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .progress {
+            background: #fff;
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .time {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            color: #b8c1ec;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="song-info">
+            <h2 class="song-title">Rise Up</h2>
+            <p class="artist">TheFatRat</p>
+        </div>
+        
+        <div class="visualizer">
+            <div class="bar" style="animation-delay: -1.2s"></div>
+            <div class="bar" style="animation-delay: -1.0s"></div>
+            <div class="bar" style="animation-delay: -0.8s"></div>
+            <div class="bar" style="animation-delay: -0.6s"></div>
+            <div class="bar" style="animation-delay: -0.4s"></div>
+            <div class="bar" style="animation-delay: -0.2s"></div>
+            <div class="bar" style="animation-delay: -0.0s"></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="prev">⏮</button>
+            <button class="btn play-btn" id="play">▶</button>
+            <button class="btn" id="next">⏭</button>
+        </div>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress" id="progress"></div>
+        </div>
+        <div class="time">
+            <span id="current-time">0:00</span>
+            <span id="duration">0:00</span>
+        </div>
+    </div>
+
+    <script>
+        const audio = new Audio('TheFatRat - Rise Up (Lyrics)(MP3_160K).mp3');
+        const playBtn = document.getElementById('play');
+        const progressContainer = document.getElementById('progress-container');
+        const progress = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationEl = document.getElementById('duration');
+        const visualizer = document.querySelector('.visualizer');
+        const bars = document.querySelectorAll('.bar');
+
+        let isPlaying = false;
+
+        function togglePlay() {
+            if (isPlaying) {
+                audio.pause();
+                playBtn.innerHTML = '▶';
+                bars.forEach(bar => bar.style.animationPlayState = 'paused');
+            } else {
+                audio.play();
+                playBtn.innerHTML = '⏸';
+                bars.forEach(bar => bar.style.animationPlayState = 'running');
+            }
+            isPlaying = !isPlaying;
+        }
+
+        function updateProgress(e) {
+            const { duration, currentTime } = e.srcElement;
+            const progressPercent = (currentTime / duration) * 100;
+            progress.style.width = `${progressPercent}%`;
+
+            // Update time
+            const durationMinutes = Math.floor(duration / 60);
+            const durationSeconds = Math.floor(duration % 60);
+            const currentMinutes = Math.floor(currentTime / 60);
+            const currentSeconds = Math.floor(currentTime % 60);
+
+            if (duration) {
+                durationEl.textContent = `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
+            }
+            currentTimeEl.textContent = `${currentMinutes}:${currentSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function setProgress(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        // Event listeners
+        playBtn.addEventListener('click', togglePlay);
+        audio.addEventListener('timeupdate', updateProgress);
+        progressContainer.addEventListener('click', setProgress);
+        audio.addEventListener('ended', () => {
+            isPlaying = false;
+            playBtn.innerHTML = '▶';
+            bars.forEach(bar => bar.style.animationPlayState = 'paused');
+        });
+
+        // Initialize bars to paused state
+        bars.forEach(bar => bar.style.animationPlayState = 'paused');
+    </script>
+</body>
+</html>
